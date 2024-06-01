@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" type="x-icon" href="./img/logo.png">
+  <title>WhatsApp Botto</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: url("https://i.imgur.com/600nnmI.jpeg") no-repeat center center/cover;
+      font-family: 'Poppins', sans-serif;
+    }
+    .container {
+      background-color: rgba(255, 255, 255, 0.052);
+      backdrop-filter: blur(50px);
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 90%;
+      margin: 0 auto;
+      height: 350px;
+      overflow: hidden; /* Prevents container size increase */
+    }
+    @media (min-width: 768px) {
+      .container {
+        max-width: 800px;
+        padding: 40px;
+        height: 600px;
+      }
+    }
+    @media (min-width: 1200px) {
+      .container {
+        max-width: 1000px;
+        height: 800px;
+      }
+    }
+    .text-color {
+      color: #ddd;
+    }
+    .centered-text {
+      text-align: center;
+    }
+    .box {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .input-container input {
+      color: #ddd;
+      margin: 5px 0;
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-bottom: 1px solid #ddd;
+      border-radius: 5px;
+      outline: none;
+      width: 250px;
+      font-family: 'Poppins', sans-serif;
+      background-color: transparent;
+      backdrop-filter: blur(5px);
+    }
+    .input-container button {
+      margin: 5px 0;
+      padding: 15px 60px;
+      font-size: 18px;
+      border: none;
+      background-color: #fff;
+      color: #000;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      animation: shrinkUnshrink 1.5s infinite;
+      font-family: 'Poppins', sans-serif;
+      transition: 0.6s ease-in-out;
+    }
+    .input-container button:hover {
+  transition: 0.6s ease-in-out; /* Adjust the transition duration */
+  color: #fff;
+  border: 3px solid #ddd; /* Add 'solid' and specify the border color */
+  background-color: transparent;
+  font-weight: 700;
+  border-radius: 30px;
+}
+
+    @keyframes shrinkUnshrink {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(0.95);
+      }
+    }
+    .typing-animation {
+      border-right: 2px solid;
+      white-space: nowrap;
+      overflow: hidden;
+      animation: typing 8s steps(60, end) infinite, blink-caret 1s step-end infinite;
+    }
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    @keyframes blink-caret {
+      from, to { border-color: transparent; }
+      50% { border-color: #ddd; }
+    }
+    #pair {
+      height: 20px; /* Set a fixed height for the pair element */
+      margin-top: 10px; /* Add some space to avoid overlapping */
+    }
+    #copyButton {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #fff;
+      background-color: #000d1b;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-family: 'Poppins', sans-serif;
+      display: none;
+    }
+    #copyButton:hover {
+      color: #000d1b;
+      background-color: #ededed;
+    }
+    /* Hide the spin box */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="box">
+      <div class="text-color">
+        <h1 class="centered-text typing-animation">WhatsApp Botto</h1>
+        <div class="input-container">
+          <input type="number" id="number" placeholder="Enter number">
+          <button id="submit">Get Code</button>
+        </div>
+        <p id="waiting-message" class="centered-text" style="display: none;">Processing...</p>
+        <div id="pair" class="centered-text"></div>
+        <div class="centered-text">
+          <button id="copyButton" onclick="copyCode()">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.6/axios.min.js"></script>
+  <script>
+    document.getElementById("submit").addEventListener("click", async (e) => {
+      e.preventDefault();
+      const numberInput = document.getElementById("number");
+      const pairElement = document.getElementById("pair");
+      const waitingMessage = document.getElementById("waiting-message");
+      const copyButton = document.getElementById("copyButton");
+
+      pairElement.innerHTML = '';
+      waitingMessage.style.display = 'none';
+      copyButton.style.display = 'none';
+
+      if (!numberInput.value) {
+        pairElement.innerHTML = '<p class="text-color">Enter your WhatsApp number with country code.</p>';
+        return;
+      }
+
+      const formattedNumber = numberInput.value.replace(/[^0-9]/g, "");
+      if (formattedNumber.length < 11) {
+        pairElement.innerHTML = '<p class="text-color">Invalid number format</p>';
+        return;
+      }
+
+      numberInput.type = "text";
+      numberInput.value = `+${formatNumber(formattedNumber)}`;
+      numberInput.style.color = "white";
+      numberInput.style.fontSize = "20px";
+      pairElement.innerHTML = '<p class="text-color">Please wait for some time</p>';
+      waitingMessage.style.display = 'block';
+
+      try {
+        const response = await axios.get(`/code?number=${formattedNumber}`);
+        const code = response.data.code || "Service Unavailable";
+        pairElement.innerHTML = `<p class="text-color">CODE: <span id="code">${code}</span></p>`;
+        copyButton.style.display = 'block';
+      } catch (error) {
+        pairElement.innerHTML = '<p class="text-color">Error fetching code. Please try again.</p>';
+      } finally {
+        waitingMessage.style.display = 'none';
+      }
+    });
+
+    function copyCode() {
+      const codeElement = document.getElementById("code").innerText;
+      navigator.clipboard.writeText(codeElement).then(() => {
+        alert("Code copied to clipboard");
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+      });
+    }
+
+    function formatNumber(number) {
+      let formattedNumber = "";
+      let groupCount = 0;
+      for (let i = 0; i < number.length; i++) {
+        formattedNumber += number[i];
+        groupCount++;
+        if (groupCount === 3 || groupCount === 8) {
+          formattedNumber += " ";
+        }
+      }
+      return formattedNumber;
+    }
+    document.getElementById("number").addEventListener("keydown", function(event) {
+  // Prevent input of "e" character
+  if (event.key === "e") {
+    event.preventDefault();
+  }
+});
+
+  </script>
+</body>
+</html>
