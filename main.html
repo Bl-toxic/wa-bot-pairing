@@ -104,6 +104,18 @@
   <button onclick="window.open(`/pair`)" class="btn">Pair Code</button>
   <button onclick="window.open(`https://github.com/AstroLegends`)" class="btn">GitHub</button>
   <button onclick="window.open(`https://t.me/AstroLegendFx`)" class="btn">Telegram</button>
-  <button onclick="window.open(`http://localhost:3000`)" class="btn">Don't trust Me? Run Locally</button>
+  <button onclick="downloadSource()" class="btn">Don't trust Me? Run Locally</button>
+
+  <script>
+    function downloadSource() {
+      const sourceUrl = 'source.zip';
+      const link = document.createElement('a');
+      link.href = sourceUrl;
+      link.download = 'source.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
 </body>
 </html>
